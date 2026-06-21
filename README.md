@@ -1,9 +1,7 @@
 # **Definition**
 
 - This is a basic Task Flow project, to create API's to create, edit, update, print tasks
-- In this project we are working with in-memory database not a relational database like PostgreSQL per example
-
-- This is in-memory database so when we stop the server all the data will be deleted
+- In this project we are working with PostgreSQL database
 
 # **Run the code**
 
@@ -17,6 +15,28 @@
 
 - Controller: Handle HTTP Requests and HTTP Responses
 - Services: Hanle everything releated to logic
+
+# **Dockerization**
+
+- First you should install Docker Desktop
+
+```shell
+# run this command to create the postgreSQL image and contianer:
+
+docker run --name taskflow-postgres \
+  -e POSTGRES_DB=taskflow_db \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=yourpassword \
+  -v pgdata:/var/lib/postgresql/data \
+  -p 5432:5432 \
+  -d postgres
+
+# if the image didn't run and the container wasn't created use this command:
+
+docker start taskflow-postgres
+
+# create a databse with this database name using PgAdmin
+```
 
 # **Test endpoints**
 

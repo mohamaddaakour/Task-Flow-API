@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.taskflow.dto.TaskRequestDTO;
+import com.taskflow.dto.TaskResponseDTO;
 import com.taskflow.entity.Task;
+import com.taskflow.mapper.TaskMapper;
 import com.taskflow.service.TaskService;
 
 import lombok.RequiredArgsConstructor;
@@ -26,21 +29,25 @@ public class TaskController {
     private final TaskService taskService;
 
     @PostMapping
-    public ResponseEntity<Task> createTask(@RequestBody Task task) {
-        Task createdTask = taskService.createTask(task);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdTask);
+    public ResponseEntity<TaskResponseDTO> createTask(@RequestBody TaskRequestDTO requestDTO) {
+        // to work with database i need the real entity not a dto
+        Task taskEntity = TaskMapper.toEntity(requestDTO);
+
+        TaskResponseDTO responseDTO = taskService.createTask(taskEntity);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
 
     @GetMapping
-    public ResponseEntity<List<Task>> getAllTasks() {
-        List<Task> tasks = taskService.getAllTasks();
+    public ResponseEntity<List<TaskResponseDTO>> getAllTasks() {
+        List<TaskResponseDTO> tasks = taskService.getAllTasks();
         return ResponseEntity.status(HttpStatus.OK).body(tasks);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getTaskById(@PathVariable Long id) {
+    public ResponseEntity<TaskResponseDTO> getTaskById(@PathVariable Long id) {
         // here the return of the service is Optional not a regular value
-        Optional<Task> taskOptional = taskService.getTaskById(id);
+        Optional<TaskResponseDTO> taskOptional = taskService.getTaskById(id);
 
         // here we check if the optional is empty
         if (taskOptional.isEmpty()) {
@@ -48,23 +55,21 @@ public class TaskController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
-        // to extract the value inside the Optional
-        Task task = taskOptional.get();
+        // we used .get() to extract the value inside the Optional
+        TaskResponseDTO responseDTO = taskOptional.get();
 
-        return ResponseEntity.status(HttpStatus.OK).body(task);
+        return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task updateTaskDetails) {
-        Optional<Task> taskOptional = taskService.updateTask(id, updateTaskDetails);
+    public ResponseEntity<TaskResponseDTO> updateTask(@PathVariable Long id, @RequestBody TaskRequestDTO requestDTO) {
+        Task taskDetailsEntity = TaskMapper.toEntity(requestDTO);
 
-        if (taskOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-
-        Task task = taskOptional.get();
-
-        return ResponseEntity.status(HttpStatus.OK).body(task);
+        // if it find the id and the update done we will get ok status code
+        // otherwise we will takse not found status code
+        return taskService.updateTask(id, taskDetailsEntity)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
