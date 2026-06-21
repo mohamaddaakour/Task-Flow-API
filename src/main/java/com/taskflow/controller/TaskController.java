@@ -19,6 +19,7 @@ import com.taskflow.entity.Task;
 import com.taskflow.mapper.TaskMapper;
 import com.taskflow.service.TaskService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import java.util.Optional;
 
@@ -28,8 +29,9 @@ import java.util.Optional;
 public class TaskController {
     private final TaskService taskService;
 
+    // we use @Valid to validate the constraints we put in the dto
     @PostMapping
-    public ResponseEntity<TaskResponseDTO> createTask(@RequestBody TaskRequestDTO requestDTO) {
+    public ResponseEntity<TaskResponseDTO> createTask(@Valid @RequestBody TaskRequestDTO requestDTO) {
         // to work with database i need the real entity not a dto
         Task taskEntity = TaskMapper.toEntity(requestDTO);
 
@@ -62,7 +64,7 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TaskResponseDTO> updateTask(@PathVariable Long id, @RequestBody TaskRequestDTO requestDTO) {
+    public ResponseEntity<TaskResponseDTO> updateTask(@PathVariable Long id, @Valid @RequestBody TaskRequestDTO requestDTO) {
         Task taskDetailsEntity = TaskMapper.toEntity(requestDTO);
 
         // if it find the id and the update done we will get ok status code
